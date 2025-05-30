@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP DEVELOPMENT-171</title>
+
+    <link rel="stylesheet" href="/main.css" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+</head>
+
+<body>
+    <div class="background-video">
+        <video src="videoplayback.webm" autoplay loop muted></video>
+        <header>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d2/MRUH_Logo.webp" alt="A+ Agenda Logo"
+                class="logo">
+            <h1>A+ AGENDA</h1>
+            <a href="https://drive.google.com/drive/folders/1Tm3fJR2NDWtBtLxrMQGxHJ4XNhu0pKHZ?usp=sharing"
+                target="_blank" class="google-drive-link">
+                <h4>GO TO GOOGLE DRIVE</h4>
+            </a>
+
+            <form id="new-task-form">
+                <select name="new-task-input" id="new-task-input">
+                    <option value="#">SELECT SUBJECT</option>
+                    <option value="ACT">ACT</option>
+                    <option value="DSA">DSA</option>
+                    <option value="FIMS">FIMS</option>
+                    <option value="FRENCH">FRENCH</option>
+                </select>
+
+                <input type="submit" id="new-task-submit" value="Add task" />
+            </form>
+
+            <main>
+                <section class="task-list">
+                    <h2>SUBJECTS TO STUDY</h2>
+                    <div id="tasks"></div>
+                </section>
+            </main>
+
+            <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+            <script>
+                gapi.load('picker', { 'callback': onPickerApiLoad });
+
+                function onPickerApiLoad() {
+                    document.getElementById('new-task-form').addEventListener('submit', handleFormSubmit);
+                }
+
+                function handleFormSubmit(event) {
+                    event.preventDefault();
+                    const selectedSubject = document.getElementById('new-task-input').value;
+
+                    if (selectedSubject !== '#') {
+                        const taskData = createTask(selectedSubject);
+                        addTaskToDOM(taskData);
+                    } else {
+                        alert('Please select a subject before adding a task.');
+                    }
+                }
+
+                function createTask(selectedSubject) {
+                    const timestamp = new Date().toLocaleString();
+                    let resourceLink = '';
+
+                    switch (selectedSubject) {
+                        case 'ACT':
+                            resourceLink = 'https://docs.google.com/document/d/1qpkg-p1Fr2vDXxtOLgLBVpDeVkF9l9XqGOFssfNPtRU/edit?usp=sharing';
+                            break;
+                        case 'DSA':
+                            resourceLink = 'https://docs.google.com/document/d/1o24UuWCBmYhPvcb4MTeMZsGNhKy78KnBkHxKUBVgF98/edit?usp=drive_link';
+                            break;
+                        case 'FIMS':
+                            resourceLink = 'https://docs.google.com/document/d/1vjA9G87ouFbRnsz7Kh9r4GXJcGGsn73is2reBcYcIds/edit?usp=sharing';
+                            break;
+                        case 'FRENCH':
+                            resourceLink = 'https://docs.google.com/document/d/18s-V6or3EsMd8hHMRh0lcH-h1TL4ZoL5nDMui5Bkexo/edit?usp=sharing';
+                            break;
+                    }
+
+                    return {
+                        subject: selectedSubject,
+                        timestamp: timestamp,
+                        resourceLink: resourceLink,
+                    };
+                }
+
+                function addTaskToDOM(taskData) {
+                    const list_el = document.getElementById('tasks');
+                    const task_el = document.createElement('div');
+                    task_el.classList.add('task');
+
+                    const task_content_el = document.createElement('div');
+                    task_content_el.classList.add('content');
+
+                    const task_input_el = document.createElement('input');
+                    task_input_el.classList.add('text');
+                    task_input_el.type = 'text';
+                    task_input_el.value = taskData.subject;
+                    task_input_el.setAttribute('readonly', 'readonly');
+
+                    task_content_el.appendChild(task_input_el);
+
+                    const task_actions_el = document.createElement('div');
+                    task_actions_el.classList.add('actions');
+
+                    const task_edit_el = document.createElement('button');
+                    task_edit_el.classList.add('edit');
+                    task_edit_el.innerText = 'Edit';
+
+                    const task_delete_el = document.createElement('button');
+                    task_delete_el.classList.add('delete');
+                    task_delete_el.innerText = 'Delete';
+
+                    task_actions_el.appendChild(task_edit_el);
+                    task_actions_el.appendChild(task_delete_el);
+
+                    if (taskData.resourceLink) {
+                        const resourceLink_el = document.createElement('a');
+                        resourceLink_el.classList.add('resources-link');
+                        resourceLink_el.innerText = 'Resources Link';
+                        resourceLink_el.href = taskData.resourceLink;
+                        resourceLink_el.target = '_blank';
+                        task_actions_el.appendChild(resourceLink_el);
+                    }
+
+                    task_el.appendChild(task_content_el);
+                    task_el.appendChild(task_actions_el);
+
+                    const timestamp_el = document.createElement('div');
+                    timestamp_el.classList.add('timestamp');
+                    timestamp_el.innerText = `Created: ${taskData.timestamp}`;
+                    task_el.appendChild(timestamp_el);
+
+                    list_el.appendChild(task_el);
+
+                    task_edit_el.addEventListener('click', (e) => {
+                        if (task_edit_el.innerText.toLowerCase() === 'edit') {
+                            task_edit_el.innerText = 'Save';
+                            task_input_el.removeAttribute('readonly');
+                            task_input_el.focus();
+                        } else {
+                            task_edit_el.innerText = 'Edit';
+                            task_input_el.setAttribute('readonly', 'readonly');
+                        }
+                    });
+
+                    task_delete_el.addEventListener('click', (e) => {
+                        list_el.removeChild(task_el);
+                    });
+                }
+            </script>
+    </div>
+</body>
+
+</html>
